@@ -21,13 +21,15 @@
       </div>
       <div class="user">
         <el-dropdown>
-          <span class="el-dropdown-link">
+          <span class="el-dropdown-link" @click="showSlide">
             <img src="../assets/img/touxiang.png" alt="" />
             {{ store.state.user.name }}
           </span>
           <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item>修改密码</el-dropdown-item>
+            <el-dropdown-menu v-if="!store.state.isMobile">
+              <el-dropdown-item @click="goto('setpassword')"
+                >修改密码</el-dropdown-item
+              >
               <el-dropdown-item @click="logout">安全退出</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -73,6 +75,10 @@
           操作中心
         </div>
         <div class="item-list">
+          <div class="oper-item" @click="goto('myclass')">
+            <img src="../assets/img/class.png" alt="" />
+            <p>我的班级</p>
+          </div>
           <div class="oper-item" @click="goto('myres')">
             <img src="../assets/img/exam.png" alt="" />
             <p>我的测试</p>
@@ -81,8 +87,11 @@
             <img src="../assets/img/res.png" alt="" />
             <p>我的课程</p>
           </div>
-
-          <div class="oper-item">
+          <div class="oper-item" @click="goto('vacation')">
+            <img src="../assets/img/vacation.png" alt="" />
+            <p>请假</p>
+          </div>
+          <div class="oper-item" @click="goto('vacationt')">
             <img src="../assets/img/vacation.png" alt="" />
             <p>请假</p>
           </div>
@@ -99,6 +108,10 @@
             <img src="../assets/img/person_info.png" alt="" />
             <p>人员档案</p>
           </div>
+          <div class="oper-item" @click="goto('createclass')">
+            <img src="../assets/img/create_class.png" alt="" />
+            <p>创建班级</p>
+          </div>
           <div class="oper-item" @click="goto('createexam')">
             <img src="../assets/img/create_exam.png" alt="" />
             <p>创建测试</p>
@@ -107,9 +120,21 @@
             <img src="../assets/img/select_course.png" alt="" />
             <p>创建课程</p>
           </div>
+          <div class="oper-item" @click="goto('livingroom')">
+            <img src="../assets/img/livingbuilding.png" alt="" />
+            <p>寝室管理</p>
+          </div>
         </div>
       </div>
     </div>
+
+    <transition name="slide">
+      <div class="slider" v-if="sliderShow">
+        <div class="slider-item" @click="goto('setpassword')">修改密码</div>
+        <div class="slider-item" @click="logout">安全退出</div>
+      </div>
+    </transition>
+    <div class="cover" v-if="sliderShow" @click="sliderShow = false"></div>
   </div>
 </template>
 
@@ -117,12 +142,13 @@
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { ref } from "vue";
-import { getMyCourse, getMyExam } from "../hook";
+import { getMyCourse, getMyExam, isRunnigMobile } from "../hook";
 
 export default {
   setup() {
     const router = useRouter();
     const store = useStore();
+    isRunnigMobile();
 
     console.log(store.state.user);
     if (!store.state.user.name) {
@@ -185,7 +211,22 @@ export default {
       return showers;
     };
 
-    return { goto, store, logout, handleCalendar, myCourses, myExam };
+    const sliderShow = ref(false);
+    const showSlide = () => {
+      if (!store.state.isMobile) return;
+      sliderShow.value = true;
+    };
+
+    return {
+      goto,
+      store,
+      logout,
+      handleCalendar,
+      myCourses,
+      myExam,
+      showSlide,
+      sliderShow,
+    };
   },
 };
 </script>
@@ -307,6 +348,123 @@ export default {
       margin-right: 10px;
       display: flex;
       align-items: center;
+    }
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .home {
+    width: 389vw;
+    height: 390vh;
+    background-size: cover;
+    background-position: center;
+
+    .header {
+      height: 125px;
+
+      .message-box {
+        .icon {
+          width: 100px;
+          height: 100px;
+          margin-right: 30px;
+        }
+      }
+
+      .el-dropdown {
+        font-size: 60px;
+        img {
+          width: 70px;
+          height: 70px;
+          margin-right: 10px;
+        }
+      }
+    }
+
+    .func-area {
+      display: block;
+      flex-direction: row;
+      height: auto;
+      margin: 50px auto;
+
+      .func-title {
+        font-size: 50px;
+      }
+
+      .calender {
+        height: auto;
+
+        .el-calendar-day {
+          height: 230px !important;
+          font-size: 50px;
+        }
+
+        .el-button--mini,
+        .el-calendar__header,
+        .el-calendar-table {
+          font-size: 50px;
+        }
+
+        .calendar-tip {
+          width: 170px;
+          height: 50px;
+          font-size: 40px;
+        }
+      }
+
+      .oper-center {
+        height: auto;
+        .item-list {
+          height: auto;
+          display: flex;
+
+          .oper-item {
+            width: 150px;
+            height: 150px;
+            font-size: 37px;
+
+            img {
+              width: 100px;
+              height: 100px;
+            }
+          }
+        }
+      }
+    }
+
+    .slider {
+      width: 500px;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      font-size: 80px;
+      background-color: #fff;
+      z-index: 1;
+      transition: 0.3s ease;
+
+      .slider-item {
+        border-bottom: 1px solid #ccc;
+        text-align: center;
+      }
+    }
+
+    .slide-enter-from,
+    .slide-leave-to {
+      transform: translateX(500px);
+    }
+    .slide-enter-to,
+    .slide-leave-from {
+      transform: translateX(0);
+    }
+
+    .cover {
+      background: rgba(0, 0, 0, 0.308);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
     }
   }
 }

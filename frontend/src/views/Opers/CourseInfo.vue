@@ -132,9 +132,13 @@ export default {
     }
 
     .exam-list {
+      display: flex;
+      flex-wrap: wrap;
+
       .exam-item {
         width: 80px;
         cursor: pointer;
+        margin: 10px;
 
         .img {
           height: 40px;

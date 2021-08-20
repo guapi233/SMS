@@ -24,12 +24,12 @@ const newMes = (obj) => {
   return true;
 };
 
-const readMes = ({ id }) => {
-  MessageModel.updateOne({ id }, { state: 0 });
-}
+const readMes = (id) => {
+  MessageModel.updateOne({ id }, { $set: { status: 0 } }, (err, data) => {});
+};
 
 module.exports = {
   MessageModel,
   readMes,
-  newMes
+  newMes,
 };

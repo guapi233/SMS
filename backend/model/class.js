@@ -21,10 +21,6 @@ const ClassSchema = new Schema({
     type: String,
     default: "",
   },
-  students: {
-    type: Array,
-    default: []
-  }
 });
 
 const ClassModel = mongoose.model("class", ClassSchema);

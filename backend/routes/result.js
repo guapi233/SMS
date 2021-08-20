@@ -3,6 +3,7 @@ const { ResultModel } = require("../model/result");
 const { CourseModel } = require("../model/course");
 const { PersonModel } = require("../model/person");
 const { ExamModel } = require("../model/exam");
+const { newMes } = require("../model/message");
 
 router.prefix("/result");
 
@@ -51,9 +52,9 @@ router.get("/getlist", async function (ctx, next) {
             resolve(data[0]);
           });
         });
-
+        if (!result) continue;
         persons[i].result = result.result;
-        persons[i].qualified = result.qualified ?"√" :"×";
+        persons[i].qualified = result.qualified ? "√" : "×";
         data.push(persons[i]);
       }
     })
@@ -71,23 +72,33 @@ router.get("/getmy", async function (ctx, next) {
   const data = await new Promise((resolve, reject) => {
     ResultModel.find({ usernumber }, (err, data) => {
       resolve(data);
-    })
+    });
   });
 
   for (let i in data) {
     data[i] = data[i].toJSON();
-    data[i].qualified = data[i].qualified ?"√" :"×";
+    data[i].qualified = data[i].qualified ? "√" : "×";
   }
 
   ctx.body = {
     state: 1,
-    data
-  }
+    data,
+  };
 });
 
 router.post("/new", function (ctx, next) {
   const newer = new ResultModel(ctx.request.body);
   newer.save();
+
+  const { usernumber, teacher, name } = ctx.request.body;
+  newMes({
+    id: new Date().getTime() + "",
+    usernumber,
+    type: "新成绩",
+    time: new Date().getTime() + "",
+    by: teacher,
+    content: `您参与的考核《${name}》的成绩出炉啦，请前往成绩中心进行查看~`,
+  });
 
   ctx.body = {
     state: 1,

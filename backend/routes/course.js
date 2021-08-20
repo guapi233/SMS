@@ -2,8 +2,9 @@ const router = require("koa-router")();
 const { CourseModel } = require("../model/course");
 const { SelectCourseModel } = require("../model/selectCourse");
 const { ExamModel } = require("../model/exam");
-const { getUserInfo } = require("../model/person");
+const { getUserInfo, PersonModel } = require("../model/person");
 const { ResultModel } = require("../model/result");
+const { newMes } = require("../model/message");
 
 router.prefix("/course");
 
@@ -106,9 +107,16 @@ router.post("/select", function (ctx, next) {
   };
 });
 
-router.post("/newexam", function (ctx, next) {
+router.post("/newexam", async function (ctx, next) {
   // 处理涉及学生字段
-  const { students } = ctx.request.body;
+  const { teacher, name, course } = ctx.request.body;
+  const c = await new Promise((resolve, reject) => {
+    CourseModel.findOne({ name: course }, "-_v", (err, data) => {
+      resolve(data);
+    })
+  });
+  const students = c.students.split("||");
+
   let s = "";
   for (let i in students) {
     s += `${students[i][0]}${students[i][1]}||`;
@@ -117,6 +125,35 @@ router.post("/newexam", function (ctx, next) {
 
   const newer = new ExamModel(ctx.request.body);
   newer.save();
+
+  // 添加消息
+  for (let i in students) {
+    if (!students[i]) continue;
+
+    let grade = students[i].slice(0, 2);
+    let major = students[i].slice(3);
+    grade = `${parseInt(grade)}`;
+
+    const res = await new Promise((resolve, reject) => {
+      PersonModel.find({ grade, major }, "-_v", (err, data) => {
+        resolve(data);
+      });
+    });
+
+    for (let j in res) {
+      const user = res[j];
+      if (user.name === teacher) continue;
+
+      newMes({
+        id: new Date().getTime() + "",
+        usernumber: user.usernumber,
+        type: "新考试",
+        time: new Date().getTime() + "",
+        by: teacher,
+        content: `您有新的考核需要参加：《${name}》`,
+      });
+    }
+  }
 
   ctx.body = {
     state: 1,
@@ -141,8 +178,8 @@ router.get("/getexamlist", async function (ctx, next) {
       ResultModel.findOne({ name: data[i].name, usernumber }, (err, data) => {
         resolve(data);
       });
-    })
-    data[i].result = result.result;
+    });
+    result && (data[i].result = result.result);
   }
 
   ctx.body = {
@@ -159,7 +196,7 @@ router.get("/getmyexam", async function (ctx, next) {
   const courses = await new Promise((resolve, reject) => {
     CourseModel.find({ students: { $regex: students } }, "-_v", (err, data) => {
       resolve(data);
-    })
+    });
   });
 
   // 2. 查询其中包含的考试
@@ -171,14 +208,14 @@ router.get("/getmyexam", async function (ctx, next) {
       ExamModel.find({ course: courses[i].name }, "-_v", (err, data) => {
         resolve(data);
       });
-    })
+    });
 
     data.push(...exams);
-  };
+  }
 
   ctx.body = {
     state: 1,
-    data
+    data,
   };
 });
 

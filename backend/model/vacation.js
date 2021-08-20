@@ -4,24 +4,23 @@ const Schema = mongoose.Schema;
 
 const VacationSchema = new Schema({
   id: String,
+  type: String,
   usernumber: String,
   reason: String,
   status: {
     type: Number,
     default: 1,
   },
-  summary: {
+  passed: {
     type: String,
-    default: "",
+    default: "pendding",
   },
-  result: String,
-  passed: Boolean,
   beginTime: String,
   endTime: String,
   passPerson: String,
 });
 
-const VacationModel = mongoose.model("result", VacationSchema);
+const VacationModel = mongoose.model("vacation", VacationSchema);
 
 module.exports = {
     VacationModel,

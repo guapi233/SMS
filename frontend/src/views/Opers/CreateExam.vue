@@ -62,17 +62,19 @@ import Layer from "./Layer.vue";
 import { ref } from "vue";
 import { getMyCourse, addExam } from "../../hook";
 import { ElMessage } from "element-plus";
+import { useStore } from "vuex";
 
 export default {
   components: { Layer },
   setup() {
+    const store = useStore();
     const form = ref({
       name: "",
       region: "",
       course: "",
       beginTime: "",
       students: {},
-      summary: "",
+      summary: ""
     });
 
     // 测试对象
@@ -113,7 +115,10 @@ export default {
     getMyCourse(courseList);
 
     const onSubmit = async () => {
-      const res = await addExam(form.value);
+      const res = await addExam({
+        ...form.value,
+        teacher: store.state.user.name
+      });
 
       if (res.data.state === 1) {
         ElMessage.success("创建成功");

@@ -2,7 +2,8 @@ import { createStore } from 'vuex'
 
 export default createStore({
   state: {
-    user: JSON.parse(window.localStorage.getItem("user")) || {}
+    user: JSON.parse(window.localStorage.getItem("user")) || {},
+    isMobile: false
   },
   mutations: {
     setUser(state, payload) {
@@ -12,6 +13,9 @@ export default createStore({
     logout(state) {
       state.user = {};
       window.localStorage.setItem("user", "{}");
+    },
+    runningMobile(state) {
+      state.isMobile = true;
     }
   },
   actions: {

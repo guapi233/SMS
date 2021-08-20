@@ -87,4 +87,17 @@ router.post("/new", function (ctx, next) {
   };
 });
 
+router.post("/setpassword", function (ctx, next) {
+  const { usernumber, password } = ctx.request.body;
+
+  PersonModel.updateOne({ usernumber }, { $set: { password } }, (err, data) => {
+    console.log(data, err)
+  });
+
+  ctx.body = {
+    state: 1,
+    data: "注册成功",
+  };
+});
+
 module.exports = router;

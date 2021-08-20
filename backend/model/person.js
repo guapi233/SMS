@@ -29,6 +29,10 @@ const PersonSchema = new Schema({
   summary: {
     type: String,
     default: "",
+  },
+  livingroom: {
+    type: String,
+    default: ""
   }
 });
 

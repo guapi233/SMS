@@ -57,10 +57,12 @@ import * as echarts from "echarts";
 import { addResult, getResultList } from "../../hook";
 import { useRoute } from "vue-router";
 import { ElMessage } from "element-plus";
+import { useStore } from "vuex";
 
 export default {
   components: { Layer },
   setup() {
+    const store = useStore();
     const activeName = ref("statistic");
     const route = useRoute();
     const chartDom = ref();
@@ -75,6 +77,7 @@ export default {
       const res = await addResult({
         name,
         ...form.value,
+        teacher: store.state.user.name
       });
 
       if (res.data.state === 1) {
@@ -97,6 +100,7 @@ export default {
           top: "5%",
           left: "center",
         },
+        color:['rgb(103, 194, 58)', 'rgb(245, 108, 108)'],
         series: [
           {
             name: "访问来源",
@@ -136,7 +140,7 @@ export default {
     ];
     getResultList(resultList, { name }, () => {
       resultList.value.forEach((result) => {
-        result.qualified ? chartData[0].value++ : chartData[1].value++;
+        result.qualified==="√" ? chartData[0].value++ : chartData[1].value++;
       });
 
       initChart();
