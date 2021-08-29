@@ -111,6 +111,22 @@ const routes = [
         /* webpackChunkName: "Livingroom" */ "../views/Opers/Livingroom.vue"
       ),
   },
+  {
+    path: "/checkt",
+    name: "CheckT",
+    component: () =>
+      import(
+        /* webpackChunkName: "CheckT" */ "../views/Opers/CheckT.vue"
+      ),
+  },
+  {
+    path: "/check",
+    name: "Check",
+    component: () =>
+      import(
+        /* webpackChunkName: "Check" */ "../views/Opers/Check.vue"
+      ),
+  },
 ];
 
 const router = createRouter({

@@ -1,5 +1,6 @@
 <template>
   <div class="login-page">
+    <div class="system-name">职能社培训管理系统</div>
     <div class="login-box">
       <p class="title">登录</p>
       <el-input placeholder="账号" v-model="usernumber" class="username"></el-input>
@@ -44,6 +45,14 @@ export default {
   width: 100vw;
   height: 100vh;
   background-image: url("../assets/img/login-bg.jpg");
+  overflow: hidden;
+
+  .system-name {
+    margin: 200px auto 0;
+    font-size: 40px;
+    width: 400px;
+    color: #fff;
+  }
 
   .login-box {
     width: 300px;

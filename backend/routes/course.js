@@ -79,6 +79,26 @@ router.get("/getinfo", async function (ctx, next) {
   };
 });
 
+// 获取全部课程
+router.get("/getall", async function (ctx, next) {
+  const { name, teacher, type, students, beginTime, endTime, day } = ctx.query;
+  const wheres = {};
+  if (name) wheres.name = { $regex: name };
+  if (teacher) wheres.teacher = teacher;
+  if (type) wheres.type = type;
+  if (students) wheres.students = { $regex: students };
+  if (beginTime) wheres.beginTime = { $rt: beginTime };
+  if (endTime) wheres.endTime = { $lt: endTime };
+  if (day) wheres.day = { $regex: day };
+
+  const data = await CourseModel.find(wheres);
+
+  ctx.body = {
+    state: 1,
+    data
+  };
+});
+
 router.post("/new", function (ctx, next) {
   // 处理涉及学生字段
   const { students } = ctx.request.body;
@@ -94,6 +114,28 @@ router.post("/new", function (ctx, next) {
   ctx.body = {
     state: 1,
     data: "创建成功",
+  };
+});
+
+router.post("/edit", async function (ctx, next) {
+  const { name } = ctx.request.body;
+  await CourseModel.updateOne({ name }, {
+    $set: ctx.request.body
+  });
+
+  ctx.body = {
+    state: 1,
+    data: "创建成功",
+  };
+});
+
+router.post("/del", async function (ctx, next) {
+  const { name } = ctx.request.body;
+  await CourseModel.deleteOne({ name });
+
+  ctx.body = {
+    state: 1,
+    data: "删除成功",
   };
 });
 

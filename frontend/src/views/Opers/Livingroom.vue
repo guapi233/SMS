@@ -1,5 +1,5 @@
 <template>
-  <Layer title="变量管理">
+  <Layer title="寝室管理">
     <div class="page-livingroom">
       <div class="opers-bar">
         <el-button @click="dialogVisible = true" type="primary"
@@ -45,9 +45,15 @@
               </svg>
             </div>
             <div class="room-list">
-              <div class="room-item" v-for="room in lvb.rooms" :key="room.name">
+              <div
+                class="room-item"
+                v-for="room in lvb.rooms"
+                :key="room.name"
+                @click="openRoomConfig(room)"
+              >
                 <img src="../../assets/img/livingroom.png" alt="" />
                 <p>{{ room.name }}</p>
+                <p>{{ `${room.including}/${room.max}` }}</p>
               </div>
             </div>
             <el-dialog title="添加寝室" v-model="dialogVisible2" width="30%">
@@ -58,7 +64,9 @@
               <template #footer>
                 <span class="dialog-footer">
                   <el-button @click="dialogVisible2 = false">取 消</el-button>
-                  <el-button type="primary" @click="addRoom(lvb.name)">确 定</el-button>
+                  <el-button type="primary" @click="addRoom(lvb.name)"
+                    >确 定</el-button
+                  >
                 </span>
               </template>
             </el-dialog>
@@ -77,13 +85,34 @@
           </span>
         </template>
       </el-dialog>
+
+      <el-dialog :title="activeRoom.name" v-model="dialogVisible3" width="30%">
+        <div class="adder">
+          <div class="user-live">
+            <div
+              class="person-item"
+              v-for="item in activeRoom.students"
+              :key="item.name"
+            >
+              <div class="img">
+                <img src="../../assets/img/touxiang.png" alt="" />
+              </div>
+              <div class="person-info">
+                <p>{{ item.name }}</p>
+              </div>
+            </div>
+          </div>
+          学号：<el-input v-model="usernumber"></el-input>
+          <el-button type="primary" size="mini" @click="addToRoom">添加</el-button>
+        </div>
+      </el-dialog>
     </div>
   </Layer>
 </template>
 <script>
 import Layer from "./Layer.vue";
 import { ref } from "vue";
-import { addLvBuilding, addLvRoom, getLvbuildingList } from "../../hook";
+import { addLvBuilding, addLvRoom, getLvbuildingList, addStudent } from "../../hook";
 import { ElMessage } from "element-plus";
 
 export default {
@@ -92,6 +121,7 @@ export default {
     const activeNames = ref([""]);
     const dialogVisible = ref(false);
     const dialogVisible2 = ref(false);
+    const dialogVisible3 = ref(false);
     const newBuildName = ref("");
     const newRoomName = ref("");
     const max = ref("");
@@ -118,23 +148,47 @@ export default {
       const res = await addLvRoom({
         name: newRoomName.value,
         max: +max.value,
-        building
+        building,
       });
 
       if (res.data.state === 1) {
-        lvbuildingList.value.forEach(b => {
+        lvbuildingList.value.forEach((b) => {
           if (b.name === building) {
             b.rooms.push({
               name: newRoomName.value,
               max: +max.value,
-              building
-            })
+              building,
+            });
           }
-        })
+        });
         newRoomName.value = "";
-        max.value = "",
-        ElMessage.success("添加成功");
+        (max.value = ""), ElMessage.success("添加成功");
         dialogVisible2.value = false;
+      }
+    };
+
+    const activeRoom = ref({});
+    const openRoomConfig = (r) => {
+      activeRoom.value = r;
+      dialogVisible3.value = true;
+    }
+    const usernumber = ref("");
+    const addToRoom = async () => {
+      if (activeRoom.value.including >= activeRoom.value.max) {
+        ElMessage.error("房间已满，添加失败");
+        return;
+      }
+
+      const res = await addStudent({
+        usernumber: usernumber.value,
+        livingroom: activeRoom.value.name
+      });
+
+      if (res.data.state === 1) {
+        usernumber.value = "";
+        ElMessage.success("添加成功");
+        dialogVisible3.value = false;
+        getLvbuildingList(lvbuildingList);
       }
     };
 
@@ -142,11 +196,17 @@ export default {
       activeNames,
       dialogVisible,
       dialogVisible2,
+      dialogVisible3,
       newBuildName,
       newRoomName,
       addBuild,
       addRoom,
       lvbuildingList,
+      activeRoom,
+      openRoomConfig,
+      addToRoom,
+      max,
+      usernumber
     };
   },
 };
@@ -154,6 +214,27 @@ export default {
 <style lang="scss">
 .page-livingroom {
   padding: 20px;
+
+  .user-live {
+    display: flex;
+    flex-wrap: wrap;
+
+    .person-item {
+      width: 80px;
+      cursor: pointer;
+      margin: 10px;
+
+      .img {
+        height: 40px;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .person-info {
+        text-align: center;
+      }
+    }
+  }
 
   .opers-bar {
     text-align: right;

@@ -1,5 +1,5 @@
 <template>
-  <Layer title="变量管理">
+  <Layer :title="name">
     <div class="page-examinfo">
       <el-tabs v-model="activeName" type="card">
         <el-tab-pane label="得分概览" name="statistic">
@@ -24,7 +24,7 @@
         </el-tab-pane>
         <el-tab-pane label="考核评分" name="givePoint">
           <div>
-            <div class="oper-area">
+            <div class="oper-area" style="display:none;">
               <el-button type="primary">快速录入</el-button>
               <el-button>导出表格</el-button>
             </div>
@@ -146,7 +146,7 @@ export default {
       initChart();
     });
 
-    return { form, activeName, resultList, chartDom, onSubmit };
+    return { form, activeName, resultList, chartDom, onSubmit, name };
   },
 };
 </script>

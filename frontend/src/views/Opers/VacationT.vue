@@ -1,5 +1,5 @@
 <template>
-  <Layer title="变量管理">
+  <Layer title="请假管理">
     <div class="page-vacation-t">
       <div class="page-top">
         <div class="title">处于休假状态的同学</div>
@@ -114,7 +114,8 @@ export default {
       return vacationList.value.filter(
         (vacation) =>
           new Date(vacation.beginTime) <= today &&
-          new Date(vacation.endTime) >= today
+          new Date(vacation.endTime) >= today &&
+          vacation.passed === "resolve"
       );
     });
 

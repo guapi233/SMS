@@ -18,6 +18,7 @@
             p-id="3254"
           ></path>
         </svg>
+        <div class="news-tip" v-if="messageList.length">{{messageList.length}}</div>
       </div>
       <div class="user">
         <el-dropdown>
@@ -87,11 +88,15 @@
             <img src="../assets/img/res.png" alt="" />
             <p>我的课程</p>
           </div>
-          <div class="oper-item" @click="goto('vacation')">
+          <div
+            class="oper-item"
+            v-if="store.state.user.authority !== 'student'"
+            @click="goto('vacationt')"
+          >
             <img src="../assets/img/vacation.png" alt="" />
             <p>请假</p>
           </div>
-          <div class="oper-item" @click="goto('vacationt')">
+          <div class="oper-item" @click="goto('vacation')" v-else>
             <img src="../assets/img/vacation.png" alt="" />
             <p>请假</p>
           </div>
@@ -99,7 +104,10 @@
       </div>
 
       <!-- 管理中心 -->
-      <div class="func-item oper-center" v-if="true">
+      <div
+        class="func-item oper-center"
+        v-if="store.state.user.authority === 'admin'"
+      >
         <div class="func-title">
           管理中心
         </div>
@@ -110,7 +118,7 @@
           </div>
           <div class="oper-item" @click="goto('createclass')">
             <img src="../assets/img/create_class.png" alt="" />
-            <p>创建班级</p>
+            <p>班级管理</p>
           </div>
           <div class="oper-item" @click="goto('createexam')">
             <img src="../assets/img/create_exam.png" alt="" />
@@ -118,7 +126,7 @@
           </div>
           <div class="oper-item" @click="goto('createcourse')">
             <img src="../assets/img/select_course.png" alt="" />
-            <p>创建课程</p>
+            <p>课程管理</p>
           </div>
           <div class="oper-item" @click="goto('livingroom')">
             <img src="../assets/img/livingbuilding.png" alt="" />
@@ -142,13 +150,12 @@
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import { ref } from "vue";
-import { getMyCourse, getMyExam, isRunnigMobile } from "../hook";
+import { getMyCourse, getMyExam, getMessageList } from "../hook";
 
 export default {
   setup() {
     const router = useRouter();
     const store = useStore();
-    isRunnigMobile();
 
     console.log(store.state.user);
     if (!store.state.user.name) {
@@ -207,7 +214,6 @@ export default {
         }
       });
 
-      console.log(showers);
       return showers;
     };
 
@@ -217,7 +223,12 @@ export default {
       sliderShow.value = true;
     };
 
+    // 新消息提醒
+    const messageList = ref([]);
+    getMessageList(messageList, { usernumber: store.state.user.usernumber, status: 1 });
+
     return {
+      messageList,
       goto,
       store,
       logout,
@@ -348,6 +359,20 @@ export default {
       margin-right: 10px;
       display: flex;
       align-items: center;
+      position: relative;
+
+      .news-tip {
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 50%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        background-color: red;
+        color: #fff;
+        text-align: center;
+      }
     }
   }
 }

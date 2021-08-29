@@ -5,7 +5,11 @@
         <el-tab-pane label="学生" name="student">
           <div class="shaixuan-box">
             专业：
-            <el-select v-model="Xmajor" placeholder="请选择">
+            <el-select
+              v-model="Xmajor"
+              placeholder="请选择"
+              :size="store.state.isMobile ? 'mini' : 'medium'"
+            >
               <el-option
                 v-for="item in majorOptions"
                 :key="item.value"
@@ -14,6 +18,7 @@
               >
               </el-option>
             </el-select>
+            <br v-if="store.state.isMobile" />
             班级：
             <el-select v-model="Xclass" placeholder="请选择">
               <el-option
@@ -24,6 +29,7 @@
               >
               </el-option>
             </el-select>
+            <br v-if="store.state.isMobile" />
             性别：
             <el-select v-model="Xsex" placeholder="请选择">
               <el-option
@@ -48,7 +54,7 @@
               <el-button type="primary" size="mini" @click="openAdd"
                 >添加学生</el-button
               >
-              <el-button size="mini">导出表格</el-button>
+              <el-button size="mini" @click="exportExcel">导出表格</el-button>
             </div>
           </div>
           <div class="student-area">
@@ -111,7 +117,7 @@
               <el-button type="primary" size="mini" @click="openAdd(true)"
                 >添加教职工</el-button
               >
-              <el-button size="mini">导出表格</el-button>
+              <el-button size="mini" @click="exportExcel">导出表格</el-button>
             </div>
           </div>
           <div class="teacher-area">
@@ -132,11 +138,9 @@
         学号：<el-input v-model="newer.usernumber"></el-input> 姓名：<el-input
           v-model="newer.name"
         ></el-input>
-        年级：<el-input
-          v-model="newer.grade"
-        ></el-input>
+        年级：<el-input v-model="newer.grade"></el-input>
         专业：
-        <el-select v-model="newer.major" placeholder="请选择">
+        <el-select v-model="newer.major" style="margin:10px 0;" placeholder="请选择">
           <el-option
             v-for="item in majorOptions"
             :key="item.value"
@@ -147,7 +151,7 @@
         </el-select>
         <br />
         班级：
-        <el-select v-model="newer.class" placeholder="请选择">
+        <el-select v-model="newer.class" style="margin:10px 0;" placeholder="请选择">
           <el-option
             v-for="item in classOptions"
             :key="item.value"
@@ -158,7 +162,7 @@
         </el-select>
         <br />
         性别：
-        <el-select v-model="newer.gender" placeholder="请选择">
+        <el-select v-model="newer.gender" style="margin:10px 0;" placeholder="请选择">
           <el-option
             v-for="item in sexOptions"
             :key="item.value"
@@ -179,10 +183,13 @@ import Layer from "./Layer.vue";
 import { ref } from "vue";
 import { getPersonList, addPerson } from "@/hook";
 import { ElMessage } from "element-plus";
+import { useStore } from "vuex";
+import { export_json_to_excel } from "../../utils/index";
 
 export default {
   components: { Layer },
   setup() {
+    const store = useStore();
     const activeName = "student";
     const Xsex = ref("");
     const Xclass = ref("");
@@ -266,7 +273,7 @@ export default {
     const addP = async (isT) => {
       const obj = {
         ...newer.value,
-        password: newer.value.usernumber
+        password: newer.value.usernumber,
       };
       isT === true ? (obj.authority = "teacher") : (obj.authority = "student");
       const res = await addPerson(obj);
@@ -280,7 +287,28 @@ export default {
       }
     };
 
+    // export
+    const exportExcel = () => {
+      const tHeader = ["姓名", "工号", "性别", "专业", "班级"];
+      const filterVal = ["name", "usernumber", "gender", "major", "class"];
+
+      const formatJson = (filterVal, jsonData) => {
+        return jsonData.map((v) => filterVal.map((j) => v[j]));
+      };
+      let data = JSON.parse(JSON.stringify(students.value));
+      data = formatJson(filterVal, data)
+
+      export_json_to_excel({
+        header: tHeader,
+        filename: "人员信息",
+        autoWidth: true,
+        bookType: "xlsx",
+        data
+      });
+    };
+
     return {
+      exportExcel,
       activeName,
       Xsex,
       Xclass,
@@ -297,6 +325,7 @@ export default {
       openAdd,
       newer,
       addP,
+      store,
     };
   },
 };

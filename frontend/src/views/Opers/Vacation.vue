@@ -1,5 +1,5 @@
 <template>
-  <Layer title="变量管理">
+  <Layer title="请假">
     <div class="page-vacation">
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane label="我要请假" name="vacation">

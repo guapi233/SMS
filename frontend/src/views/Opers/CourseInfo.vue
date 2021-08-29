@@ -1,5 +1,5 @@
 <template>
-  <Layer title="变量管理">
+  <Layer title="课程信息">
     <div class="page-course-info">
       <div class="top">
         <div class="left">
@@ -17,9 +17,30 @@
           </div>
         </div>
       </div>
+      <div class="center">
+        <div class="oper-bar">
+          <div class="title">打卡记录</div>
+          <el-button v-if="store.state.user.authority!=='student'" type="primary" size="mini" @click="newCheck"
+            >创建</el-button
+          >
+        </div>
+        <div class="check-list">
+          <el-scrollbar height="250px">
+            <div class="check-item" v-for="check in checkList" :key="check.id" @click="gotoCheck(check.id)">
+              <div class="isrunning" :class="[check.isEnd ? 'end' : 'run']">
+                {{ check.isEnd ? "已结束" : "进行中" }}
+              </div>
+              <div class="time">{{ handleDate(check.beginTime) }} -- {{ handleDate(check.endTime) }}</div>
+            </div>
+          </el-scrollbar>
+        </div>
+      </div>
       <div class="bottom">
         <div class="oper-bar">
-          <el-button type="primary" @click="goto('createexam')">添加</el-button>
+          <div class="title">考核记录</div>
+          <el-button v-if="store.state.user.authority!=='student'" type="primary" size="mini" @click="goto('createexam')"
+            >创建</el-button
+          >
         </div>
         <div class="exam-list">
           <div
@@ -60,8 +81,9 @@
 import Layer from "./Layer.vue";
 import { useRoute, useRouter } from "vue-router";
 import { useStore } from "vuex";
-import { getCourseInfo, getExamList } from "../../hook";
+import { getCourseInfo, getExamList, getCheckList, addCheck } from "../../hook";
 import { ref } from "vue";
+import { ElMessage } from "element-plus";
 
 export default {
   components: { Layer },
@@ -76,23 +98,70 @@ export default {
 
     const courseInfo = ref({ teacher: {} });
     getCourseInfo(courseInfo, name, () => {
-      getExamList(examList, { course: courseInfo.value.name, usernumber: store.state.user.usernumber });
+      getExamList(examList, {
+        course: courseInfo.value.name,
+        usernumber: store.state.user.usernumber,
+      });
     });
 
     const goto = (path, name) => {
       router.push(`/${path}?name=${name}`);
     };
 
-    return { courseInfo, examList, goto };
+    // 打卡列表
+    const numbers = ["4396", "7891", "0459", "2020", "9054"];
+    const checkList = ref([]);
+    getCheckList(checkList, {
+      usernumber: store.state.user.usernumber,
+      course: name,
+    });
+    const newCheck = async () => {
+      const id = new Date().getTime();
+      const res = await addCheck({
+        beginTime: new Date(),
+        endTime: "",
+        course: name,
+        code: numbers[Math.floor(Math.random() * 5)],
+        id,
+      });
+
+      if (res.data.state === 1) {
+        ElMessage.success("创建成功");
+        router.push(`/checkt?id=${id}&course=${name}`);
+      }
+    };
+    const handleDate = (date) => {
+      if (!date) return "";
+
+      date = new Date(date);
+      return `${date.getFullYear()}/${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}/${date
+        .getDate()
+        .toString()
+        .padStart(2, "0")}/
+        ${date.getHours()}:
+        ${date.getMinutes()}:
+        ${date.getSeconds()}`;
+    };
+
+    const gotoCheck = (id) => {
+      if (store.state.user.authority === "student") {
+        router.push(`/check?id=${id}&course=${name}`)
+      } else {
+        router.push(`/checkt?id=${id}&course=${name}`)
+      }
+    }
+    return { courseInfo, examList, goto, newCheck, checkList, handleDate, gotoCheck, store };
   },
 };
 </script>
 <style lang="scss">
 .page-course-info {
-  padding: 30px;
+  padding: 0 30px;
 
   .top {
-    height: 400px;
+    height: 250px;
     display: flex;
     border-bottom: 1px solid #ccc;
 
@@ -118,18 +187,53 @@ export default {
 
     .right {
       flex: 3;
+
+      img {
+        width: 300px;
+        max-height: 400px;
+      }
+    }
+  }
+
+  .title {
+    padding: 20px 0;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .oper-bar {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .end {
+    color: rgb(245, 108, 108);
+  }
+
+  .run {
+    color: rgb(103, 194, 58);
+  }
+
+  .center {
+    .check-list {
+      .check-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 2px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+        cursor: pointer;
+      }
     }
   }
 
   .bottom {
-    height: 460px;
+    height: 250px;
     padding-top: 30px;
     box-sizing: border-box;
-
-    .oper-bar {
-      height: 80px;
-      text-align: right;
-    }
 
     .exam-list {
       display: flex;
